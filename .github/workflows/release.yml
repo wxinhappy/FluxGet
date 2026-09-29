@@ -75,31 +75,6 @@ jobs:
             release/**/*.blockmap
           if-no-files-found: error
 
-  diagnose:
-    name: 导出失败日志
-    if: failure()
-    needs: [build-windows, build-macos]
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-    steps:
-      - name: 抓取失败日志并建 issue
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          for i in $(seq 1 60); do
-            st=$(gh run view "${{ github.run_id }}" --repo "$GITHUB_REPOSITORY" --json status --jq .status 2>/dev/null || echo unknown)
-            echo "等待运行结束: $st ($i)"
-            [ "$st" = "completed" ] && break
-            sleep 10
-          done
-          gh run view "${{ github.run_id }}" --repo "$GITHUB_REPOSITORY" --log-failed > /tmp/ci.log 2>&1 || true
-          wc -c /tmp/ci.log
-          head -c 40000 /tmp/ci.log > /tmp/ci-trim.log
-          gh issue create --repo "$GITHUB_REPOSITORY" \
-            --title "CI 构建失败 run-${{ github.run_id }}" \
-            --body-file /tmp/ci-trim.log || echo "建 issue 失败"
-
   publish:
     name: 汇总发布双平台安装包
     needs: [build-windows, build-macos]

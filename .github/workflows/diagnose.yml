@@ -1,0 +1,28 @@
+name: 构建失败诊断
+
+# 主工作流彻底结束后才启动，此时日志必然可读
+on:
+  workflow_run:
+    workflows: ["全平台发布构建"]
+    types: [completed]
+
+jobs:
+  report:
+    name: 抓取失败日志
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: 抓取日志并建 issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh run view "$RUN_ID" --repo "$REPO" --log-failed > /tmp/ci.log 2>&1 || true
+          wc -c /tmp/ci.log
+          head -c 45000 /tmp/ci.log > /tmp/ci-trim.log
+          gh issue create --repo "$REPO" \
+            --title "CI 构建失败 run-$RUN_ID" \
+            --body-file /tmp/ci-trim.log || echo "建 issue 失败"
