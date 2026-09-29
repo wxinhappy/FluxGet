@@ -1,0 +1,67 @@
+{
+  "manifest_version": 3,
+  "name": "FluxGet 下载接管",
+  "version": "1.2.0",
+  "description": "接管浏览器下载、抓取网页视频音频资源，交给 FluxGet 多线程下载器高速下载",
+  "author": "FluxGet",
+  "minimum_chrome_version": "96",
+  "permissions": [
+    "downloads",
+    "contextMenus",
+    "storage",
+    "activeTab",
+    "scripting",
+    "notifications",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:16888/*",
+    "http://127.0.0.1:16889/*",
+    "http://127.0.0.1:16890/*",
+    "http://127.0.0.1:16891/*",
+    "http://127.0.0.1:16892/*",
+    "http://127.0.0.1:16893/*",
+    "http://127.0.0.1:16894/*",
+    "http://127.0.0.1:16895/*",
+    "http://127.0.0.1:16896/*",
+    "http://127.0.0.1:16897/*",
+    "http://127.0.0.1:16898/*",
+    "http://127.0.0.1:16899/*",
+    "http://localhost:16888/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FluxGet 下载管理器",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

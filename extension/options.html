@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>FluxGet 扩展设置</title>
+    <style>
+      :root {
+        --bg: #171a1f;
+        --card: #1f232b;
+        --border: #2c313a;
+        --text: #e7eaf0;
+        --dim: #9099a8;
+        --accent: #4c8dff;
+      }
+      body {
+        margin: 0;
+        padding: 32px 20px;
+        background: var(--bg);
+        color: var(--text);
+        font: 13px "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      }
+      .wrap { max-width: 620px; margin: 0 auto; }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      .lead { color: var(--dim); font-size: 12.5px; margin-bottom: 24px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      .row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .row:last-child { border-bottom: none; }
+      .row .desc { flex: 1; }
+      .row .desc strong { display: block; font-size: 13px; font-weight: 600; }
+      .row .desc span { color: var(--dim); font-size: 11.5px; }
+      input[type="checkbox"], input[type="number"] { accent-color: var(--accent); }
+      input[type="number"] {
+        width: 96px;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #171a1f;
+        color: var(--text);
+      }
+      textarea {
+        width: 100%;
+        min-height: 60px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #171a1f;
+        color: var(--text);
+        padding: 8px;
+        font-family: Consolas, monospace;
+        font-size: 12px;
+      }
+      .actions { display: flex; gap: 10px; align-items: center; }
+      button {
+        height: 32px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #4c8dff, #2f6ad9);
+        color: #fff;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+      }
+      .saved { color: #7fe0a0; font-size: 12px; opacity: 0; transition: opacity 0.2s; }
+      .saved.show { opacity: 1; }
+      .hint { color: var(--dim); font-size: 12px; line-height: 1.7; }
+      code { background: #12151a; padding: 1px 5px; border-radius: 4px; color: #9fc7ff; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>FluxGet 扩展设置</h1>
+      <div class="lead">控制浏览器下载接管与网页资源嗅探行为，设置保存在本浏览器本地。</div>
+
+      <div class="card">
+        <div class="row">
+          <div class="desc">
+            <strong>启用接管</strong>
+            <span>关闭后所有下载仍由浏览器自行处理</span>
+          </div>
+          <input type="checkbox" id="enabled" />
+        </div>
+        <div class="row">
+          <div class="desc">
+            <strong>接管浏览器下载</strong>
+            <span>点击下载链接时自动交给 FluxGet，而非浏览器自带下载器</span>
+          </div>
+          <input type="checkbox" id="interceptDownloads" />
+        </div>
+        <div class="row">
+          <div class="desc">
+            <strong>接管时显示通知</strong>
+            <span>每次接管成功后弹出系统提示</span>
+          </div>
+          <input type="checkbox" id="notifyOnIntercept" />
+        </div>
+        <div class="row">
+          <div class="desc">
+            <strong>最小接管体积（字节）</strong>
+            <span>小于该值的文件不接管，0 表示全部接管</span>
+          </div>
+          <input type="number" id="minSizeBytes" min="0" step="1024" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div class="desc">
+            <strong>服务端口</strong>
+            <span>FluxGet 端「浏览器支持」页面显示的端口需与此一致，端口被占用时会自动顺延</span>
+          </div>
+          <input type="number" id="port" min="1024" max="65535" />
+        </div>
+        <div class="row">
+          <div class="desc">
+            <strong>不接管的文件后缀</strong>
+            <span>每行一个，点号开头</span>
+          </div>
+        </div>
+        <textarea id="blacklist" placeholder=".html"></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="save">保存设置</button>
+        <span class="saved" id="saved">已保存</span>
+      </div>
+
+      <div class="card" style="margin-top: 16px">
+        <div class="hint">
+          <strong style="color: var(--text)">使用提示</strong><br />
+          1. 接管功能需要 FluxGet 客户端正在运行，未启动时下载会自动回落给浏览器。<br />
+          2. 网页视频右下角会自动出现「FluxGet 下载」按钮（直链视频有效）。<br />
+          3. 部分站点采用 HLS 分片（<code>.m3u8</code>）或加密流，需先解析出最终地址。<br />
+          4. 修改端口后请重启浏览器扩展：访问 <code>chrome://extensions</code> 点击刷新。
+        </div>
+      </div>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,93 @@
+{
+  "appId": "com.fluxget.downloader",
+  "productName": "FluxGet",
+  "copyright": "Copyright © 2026 FluxGet",
+  "directories": {
+    "output": "release/${version}",
+    "buildResources": "build"
+  },
+  "extraResources": [
+    {
+      "from": "extension",
+      "to": "extension"
+    },
+    {
+      "from": "build",
+      "to": "assets"
+    }
+  ],
+  "files": ["out/**/*", "package.json"],
+  "win": {
+    "icon": "build/icon.ico",
+    "target": ["nsis", "portable"],
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "executableName": "FluxGet"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "FluxGet",
+    "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
+    "language": "2052"
+  },
+  "portable": {
+    "artifactName": "${productName}-Portable-${version}-${arch}.${ext}"
+  },
+  "mac": {
+    "icon": "build/icon.icns",
+    "category": "public.app-category.productivity",
+    "identity": null,
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "darkModeSupport": true,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist",
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "extendInfo": {
+      "NSRequiresAquaSystemAppearance": false,
+      "CFBundleDisplayName": "FluxGet"
+    },
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64"]
+      },
+      {
+        "target": "dmg",
+        "arch": ["arm64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64", "arm64"]
+      }
+    ]
+  },
+  "dmg": {
+    "sign": false,
+    "internetEnabled": true,
+    "window": {
+      "width": 560,
+      "height": 400
+    },
+    "contents": [
+      {
+        "x": 140,
+        "y": 200
+      },
+      {
+        "x": 400,
+        "y": 200,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ]
+  },
+  "linux": {
+    "icon": "build/icon.png",
+    "target": ["AppImage"],
+    "category": "Network"
+  },
+  "compression": "maximum"
+}

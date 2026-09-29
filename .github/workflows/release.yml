@@ -1,0 +1,112 @@
+name: 全平台发布构建
+
+# 打 tag 即自动构建 Windows 与 macOS（Intel + Apple 芯片）全部产物
+# 本地无需准备 Mac：macOS 包由云端 macos-latest 运行环境产出
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Windows x64
+    runs-on: windows-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      - name: 构建前端与主进程
+        run: npm run build
+
+      - name: 打包 Windows 产物
+        run: npx electron-builder --win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: FluxGet-windows
+          path: |
+            release/**/*.exe
+            release/**/*.blockmap
+          if-no-files-found: error
+
+  build-macos:
+    name: macOS Intel 与 Apple 芯片
+    runs-on: macos-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      - name: 构建前端与主进程
+        run: npm run build
+
+      - name: 打包 macOS 产物（x64 与 arm64 分离）
+        run: npx electron-builder --mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: FluxGet-macos
+          path: |
+            release/**/*.dmg
+            release/**/*.zip
+            release/**/*.blockmap
+          if-no-files-found: error
+
+  publish:
+    name: 汇总发布双平台安装包
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 下载全部平台产物
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: 展平目录
+        run: |
+          mkdir -p dist
+          find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.zip' \) -exec cp {} dist/ \;
+          ls -lh dist/
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            ## 下载
+
+            | 平台 | 文件 |
+            |------|------|
+            | Windows（安装版） | `FluxGet-Setup-${{ github.ref_name }}-x64.exe` |
+            | Windows（便携版） | `FluxGet-Portable-${{ github.ref_name }}-x64.exe` |
+            | macOS Intel 芯片 | `FluxGet-${{ github.ref_name }}-x64.dmg` |
+            | macOS Apple 芯片 | `FluxGet-${{ github.ref_name }}-arm64.dmg` |
+            | macOS 免安装（zip） | `FluxGet-${{ github.ref_name }}-x64.zip` / `-arm64.zip` |
+
+            > macOS 未签名，首次运行需「右键 → 打开」绕过 Gatekeeper。

@@ -1,0 +1,48 @@
+{
+  "name": "fluxget",
+  "version": "1.2.0",
+  "description": "FluxGet - 商业级多线程下载管理器",
+  "main": "./out/main/index.js",
+  "author": "FluxGet Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite preview --outDir out && electron .",
+    "start": "electron-vite build && electron .",
+    "icons": "node scripts/make-icons.mjs",
+    "version:sync": "node scripts/sync-version.mjs",
+    "release:check": "node scripts/check-release.mjs",
+    "prebuild": "node scripts/sync-version.mjs",
+    "build": "npm run typecheck && electron-vite build",
+    "dist": "electron-vite build && electron-builder --win",
+    "dist:win": "electron-vite build && electron-builder --win",
+    "dist:mac": "electron-vite build && electron-builder --mac",
+    "dist:mac:x64": "electron-vite build && electron-builder --mac --x64",
+    "dist:mac:arm64": "electron-vite build && electron-builder --mac --arm64",
+    "dist:linux": "electron-vite build && electron-builder --linux",
+    "dist:all": "electron-vite build && electron-builder --win --mac --linux",
+    "dist:dir": "electron-vite build && electron-builder --dir",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json",
+    "test:engine": "esbuild scripts/engine-test.ts --bundle --platform=node --format=esm --target=node20 --alias:@shared=./src/shared --outfile=.tmp/engine-test.mjs && node .tmp/engine-test.mjs",
+    "test:bridge": "esbuild scripts/bridge-test.ts --bundle --platform=node --format=esm --target=node20 --alias:@shared=./src/shared --outfile=.tmp/bridge-test.mjs && node .tmp/bridge-test.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@electron-toolkit/tsconfig": "^1.0.1",
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^30.4.0",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3"
+  },
+  "optionalDependencies": {
+    "@esbuild/win32-x64": "0.21.5",
+    "@rollup/rollup-win32-x64-msvc": "4.63.5"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+out/
+release/
+.tmp/
+.workbuddy/
+*.log
+*.tsbuildinfo
+electron.vite.config.*.mjs
+.DS_Store
