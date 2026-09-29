@@ -102,11 +102,21 @@ jobs:
         with:
           path: artifacts
 
-      - name: 展平目录
+      - name: 展平目录（只取对外发布的产物）
         run: |
           mkdir -p dist
-          find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.zip' \) -exec cp {} dist/ \;
+          find artifacts -type f \
+            \( -name 'FluxGet-Setup-*.exe' -o -name 'FluxGet-Portable-*.exe' \
+               -o -name 'FluxGet-*-x64.dmg' -o -name 'FluxGet-*-arm64.dmg' \
+               -o -name 'FluxGet-*-x64.zip' -o -name 'FluxGet-*-arm64.zip' \) \
+            -exec cp {} dist/ \;
           ls -lh dist/
+
+      - name: 清理同名旧发布（避免残留内部文件）
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete "${{ github.ref_name }}" --repo "$GITHUB_REPOSITORY" -y || echo "无旧发布"
 
       - name: 创建 GitHub Release
         uses: softprops/action-gh-release@v2
