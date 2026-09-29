@@ -81,25 +81,18 @@ jobs:
     needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      issues: write
     steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: 抓取失败步骤日志并提交
+      - name: 抓取失败日志并建 issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p .ci-logs
-          gh run view "${{ github.run_id }}" --repo "$GITHUB_REPOSITORY" --log-failed > ".ci-logs/run-${{ github.run_id }}.log" 2>&1 || true
-          wc -l ".ci-logs/run-${{ github.run_id }}.log"
-          git config user.email "ci@fluxget.local"
-          git config user.name "FluxGet CI"
-          git add .ci-logs
-          git commit -m "ci: 导出构建失败日志 run-${{ github.run_id }}" || echo "无日志可提交"
-          git push origin HEAD:main || echo "推送失败"
+          gh run view "${{ github.run_id }}" --repo "$GITHUB_REPOSITORY" --log-failed > /tmp/ci.log 2>&1 || true
+          wc -c /tmp/ci.log
+          head -c 40000 /tmp/ci.log > /tmp/ci-trim.log
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "CI 构建失败 run-${{ github.run_id }}" \
+            --body-file /tmp/ci-trim.log || echo "建 issue 失败"
 
   publish:
     name: 汇总发布双平台安装包
