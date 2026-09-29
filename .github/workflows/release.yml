@@ -56,11 +56,20 @@ jobs:
       - name: 安装依赖
         run: npm install --no-audit --no-fund
 
-      - name: 补齐平台原生二进制（绕开 npm 可选依赖 bug）
+      - name: 补齐被 npm 漏装的可选依赖
         run: |
-          node -e "require('@rollup/rollup-darwin-arm64')" 2>/dev/null || npm install --no-save @rollup/rollup-darwin-arm64@4.63.5
-          node -e "require('@esbuild/darwin-arm64')" 2>/dev/null || npm install --no-save @esbuild/darwin-arm64@0.21.5
-          node -e "console.log('rollup:', require('@rollup/rollup-darwin-arm64/package.json').version)"
+          ensure() {
+            if node -e "require('$1')" >/dev/null 2>&1; then
+              echo "已存在 $1"
+            else
+              echo "缺失 $1，补装 $1@$2"
+              npm install --no-save "$1@$2"
+            fi
+          }
+          ensure @rollup/rollup-darwin-arm64 4.63.5
+          ensure @esbuild/darwin-arm64 0.21.5
+          ensure dmg-license 1.0.11
+          node -e "['@rollup/rollup-darwin-arm64','@esbuild/darwin-arm64','dmg-license'].forEach(m=>console.log(m,'=',require(m+'/package.json').version))"
 
       - name: 构建前端与主进程
         run: npm run build
