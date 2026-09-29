@@ -56,6 +56,12 @@ jobs:
       - name: 安装依赖
         run: npm install --no-audit --no-fund
 
+      - name: 补齐平台原生二进制（绕开 npm 可选依赖 bug）
+        run: |
+          node -e "require('@rollup/rollup-darwin-arm64')" 2>/dev/null || npm install --no-save @rollup/rollup-darwin-arm64@4.63.5
+          node -e "require('@esbuild/darwin-arm64')" 2>/dev/null || npm install --no-save @esbuild/darwin-arm64@0.21.5
+          node -e "console.log('rollup:', require('@rollup/rollup-darwin-arm64/package.json').version)"
+
       - name: 构建前端与主进程
         run: npm run build
 
