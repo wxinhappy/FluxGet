@@ -27,6 +27,16 @@ git tag v1.2.0
 git push origin main --tags
 ```
 
+首次需要把本地仓库关联到 GitHub 远端（仓库已初始化 git 并打好 v1.2.0 标签）：
+
+```bash
+git remote add origin https://github.com/<你的账号>/<仓库名>.git
+git branch -M main
+git push -u origin main --tags
+```
+
+远端收到 tag 后，Actions 页面会出现「全平台发布构建」，约 10 分钟产出四份安装包并自动创建一个 GitHub Release（下载表格已按平台列好）。
+
 工作流会在 Windows 与 macOS 两台运行环境并行构建，产出在 Actions 页面下载：
 
 | 产物 | 说明 |
