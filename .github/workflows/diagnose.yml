@@ -22,7 +22,16 @@ jobs:
         run: |
           gh run view "$RUN_ID" --repo "$REPO" --log-failed > /tmp/ci.log 2>&1 || true
           wc -c /tmp/ci.log
-          head -c 45000 /tmp/ci.log > /tmp/ci-trim.log
+          {
+            echo "### 报错摘要"
+            sed 's/\x1b\[[0-9;]*m//g' /tmp/ci.log \
+              | grep -aiE "error|⨯|npm ERR|ELIFECYCLE|cannot|fatal|failed|not found|denied" \
+              | cut -c1-300 | sort -u | head -60
+            echo ""
+            echo "### 每个任务最后 15 行"
+            sed 's/\x1b\[[0-9;]*m//g' /tmp/ci.log | tail -40
+          } > /tmp/ci-err.log
+          wc -c /tmp/ci-err.log
           gh issue create --repo "$REPO" \
             --title "CI 构建失败 run-$RUN_ID" \
-            --body-file /tmp/ci-trim.log || echo "建 issue 失败"
+            --body-file /tmp/ci-err.log || echo "建 issue 失败"
