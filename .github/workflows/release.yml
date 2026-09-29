@@ -87,6 +87,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          for i in $(seq 1 60); do
+            st=$(gh run view "${{ github.run_id }}" --repo "$GITHUB_REPOSITORY" --json status --jq .status 2>/dev/null || echo unknown)
+            echo "等待运行结束: $st ($i)"
+            [ "$st" = "completed" ] && break
+            sleep 10
+          done
           gh run view "${{ github.run_id }}" --repo "$GITHUB_REPOSITORY" --log-failed > /tmp/ci.log 2>&1 || true
           wc -c /tmp/ci.log
           head -c 40000 /tmp/ci.log > /tmp/ci-trim.log
