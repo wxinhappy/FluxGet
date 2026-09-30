@@ -93,6 +93,43 @@ npm run release:check
 | 1.1.0 | ✅ | ✅（Intel / Apple 芯片） |
 | 1.2.0 | ✅ | ✅（Intel / Apple 芯片），随 Actions 同步产出 |
 
+## CI 排障（已在 v1.2.0 首发时逐一踩过）
+
+### 1. electron-builder 自己想发布，令牌没权限 → 403
+
+推 tag 触发构建时，electron-builder 检测到 tag 会**自动尝试创建 GitHub Release**，而 Actions 的内置令牌默认没有 `contents: write`，于是：
+
+```
+• artifacts will be published  reason=tag is defined
+⨯ HttpError: 403 Forbidden "Resource not accessible by integration"
+```
+
+**解法**：打包命令一律加 `--publish never`，产物只作为 workflow artifact 上传，Release 交给 `publish` 任务用 `softprops/action-gh-release` 创建（该任务单独声明 `permissions: contents: write`）。
+
+### 2. macOS 上 npm 漏装平台二进制
+
+npm 的 optional dependencies bug（[npm/cli#4828](https://github.com/npm/cli/issues/4828)）在 CI 上表现为：
+
+```
+Error: Cannot find module @rollup/rollup-darwin-arm64
+⨯ Cannot find module 'dmg-license'
+```
+
+**两层防护**：
+
+- `package.json` 的 `optionalDependencies` 显式列出 win32 / darwin / linux 各平台的 `@esbuild/*` 与 `@rollup/rollup-*` 版本（os 不匹配的会被 npm 自动跳过，互不影响）
+- macOS 任务里加「补齐被 npm 漏装的可选依赖」步骤，逐个 `node -e "require(...)"` 探测，缺失才 `npm install --no-save`
+
+### 3. 发布附件混入内部文件
+
+`dist/*` 用 `*.exe` 这种宽泛 glob 会把 `win-unpacked` 里的 `FluxGet.exe`、`elevate.exe`、`esbuild.exe` 一起发上去。**必须按文件名精确匹配** `FluxGet-Setup-*.exe`、`FluxGet-Portable-*.exe`、`FluxGet-*-{x64,arm64}.{dmg,zip}`。
+
+发布前先 `gh release delete <tag> -y` 清掉旧发布，避免残留资产累积。
+
+### 4. 远程读不到构建日志怎么办
+
+`GET /actions/jobs/{id}/logs` 需要仓库管理员权限，匿名 token 拿不到。本仓库内置了 `diagnose.yml`：以 `workflow_run` 的 `completed` 事件触发（**不能用 `if: failure()` + needs，那样会在运行还没结束时就取日志**），抓取失败步骤日志并自动建 issue。公开仓库可匿名读 issue，等于把日志"邮寄"出来。
+
 ## 发布排障
 
 **`另一个程序正在使用此文件` / `remove ... app.asar` 失败**

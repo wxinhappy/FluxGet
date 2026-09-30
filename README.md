@@ -87,6 +87,22 @@ npm run release:check # 发布前自检：版本一致性 + 产物齐全性
 
 产物输出至 `release/<版本号>/`，版本号取自 package.json。**每个版本必须同时提供 Windows 与 macOS（x64 + arm64）产物**，流程见 `docs/RELEASE.md`。
 
+## 多设备开发（Windows + Mac）
+
+代码以 GitHub 仓库为唯一交换中心：**Windows 版在这台机器上开发与打包，macOS 版在 Mac 上开发与其打包**。
+
+Mac 上首次搭建：
+
+```bash
+git clone https://github.com/wxinhappy/FluxGet.git && cd FluxGet
+npm install
+npm start
+```
+
+开工 `git pull`，收工前 `npm run typecheck` → `git add -A` → `git commit` → `git push`。一次只在一台机器上改，换机器前先把改动推上去。
+
+完整命令对照表与冲突处理见 `docs/DEV-SETUP.md`。
+
 ## 技术架构
 
 ```

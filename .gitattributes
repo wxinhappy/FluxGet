@@ -1,0 +1,13 @@
+# 统一行尾，避免 Windows 与 Mac 之间刷出全文件假 diff
+* text=auto eol=lf
+
+# 二进制文件不参与转换
+*.png binary
+*.ico binary
+*.icns binary
+*.zip binary
+*.exe binary
+*.dll binary
+*.dmg binary
+*.p12 binary
+*.mobileprovision binary
